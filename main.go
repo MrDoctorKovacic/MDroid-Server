@@ -28,7 +28,7 @@ func main() {
 	//
 
 	// Handles a low data ping, responding 200 if a connection is waiting and 204 otherwise
-	router.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/ws/ping", func(w http.ResponseWriter, r *http.Request) {
 		if len(hub.clients) > 0 {
 			w.WriteHeader(http.StatusOK)
 		} else {
