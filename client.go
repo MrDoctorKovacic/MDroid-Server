@@ -132,5 +132,5 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	// new goroutines.
 	go client.writePump()
 	go client.readPump()
-	log.Println(fmt.Sprintf("Connected. Currently %d clients connected.", len(hub.clients)))
+	log.Println(fmt.Sprintf("Connected. Currently %d clients connected.", len(hub.clients)+1))
 }

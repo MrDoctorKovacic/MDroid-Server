@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -9,6 +10,12 @@ import (
 )
 
 func main() {
+	// Read tokens file
+	err := readTokens()
+	if err != nil {
+		log.Panicln(err.Error())
+	}
+
 	// Init hub
 	hub := newHub()
 	go hub.run()
@@ -32,10 +39,19 @@ func main() {
 	// Handles upgrading a client to the websocket.
 	router.HandleFunc("/ws/{token}", func(w http.ResponseWriter, r *http.Request) {
 		params := mux.Vars(r)
-		if isValidToken(params["token"]) {
-			log.Println("Responding to client connection...")
+		token, hasToken := params["token"]
+
+		if !hasToken {
+			log.Println("Rejecting connection without token.")
+			json.NewEncoder(w).Encode("Invalid token")
+		}
+
+		log.Println(fmt.Sprintf("Client attempting to connect with token %s", token))
+		if isValidToken(token) {
+			log.Println("Accepting client connection...")
 			serveWs(hub, w, r)
 		} else {
+			log.Println("Token is invalid")
 			json.NewEncoder(w).Encode("Invalid token")
 		}
 	})
