@@ -30,8 +30,8 @@ var (
 )
 
 var upgrader = websocket.Upgrader{
-	ReadBufferSize:  4096,
-	WriteBufferSize: 4096,
+	ReadBufferSize:  8192,
+	WriteBufferSize: 8192,
 }
 
 // Client is a middleman between the websocket connection and the hub.
