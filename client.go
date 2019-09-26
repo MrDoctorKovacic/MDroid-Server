@@ -30,7 +30,7 @@ var (
 )
 
 var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
+	ReadBufferSize:  4096,
 	WriteBufferSize: 1024,
 }
 
