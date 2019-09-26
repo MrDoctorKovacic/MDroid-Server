@@ -34,8 +34,8 @@ func (h *Hub) run() {
 		select {
 		case client := <-h.register:
 			h.clients[client] = true
-		case client := <-h.unregister:
-			if _, ok := h.clients[client]; ok {
+		case <-h.unregister:
+			for client := range h.clients {
 				delete(h.clients, client)
 				close(client.send)
 			}
