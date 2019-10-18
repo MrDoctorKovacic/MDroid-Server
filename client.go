@@ -67,7 +67,11 @@ func (c *Client) readPump() {
 			break
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		c.hub.broadcast <- message
+		// parse message by newline, if necessary
+		messageSplit := bytes.Split(message, []byte("\n"))
+		for _, m := range messageSplit {
+			c.hub.broadcast <- m
+		}
 	}
 }
 
