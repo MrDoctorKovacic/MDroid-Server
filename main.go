@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -76,8 +77,7 @@ func main() {
 			return
 		}
 
-		var message []byte
-		_, err := r.Body.Read(message)
+		message, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			log.Println("Error reading body: \n" + err.Error())
 		}
@@ -85,7 +85,6 @@ func main() {
 		shareQueue = append(shareQueue, message)
 		log.Println("Added " + string(message) + " to the queue")
 		w.Write(message)
-		w.WriteHeader(http.StatusOK)
 
 	}).Methods("POST")
 
