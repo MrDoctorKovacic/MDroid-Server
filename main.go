@@ -62,6 +62,7 @@ func main() {
 			w.WriteHeader(http.StatusOK)
 			var message []byte
 			message, shareQueue = shareQueue[len(shareQueue)-1], shareQueue[:len(shareQueue)-1]
+			log.Println("Popped " + string(message) + " from the queue")
 			w.Write(message)
 		}
 
@@ -82,6 +83,7 @@ func main() {
 		}
 
 		shareQueue = append(shareQueue, message)
+		log.Println("Added " + string(message) + " to the queue")
 		w.Write(message)
 
 	}).Methods("POST")
