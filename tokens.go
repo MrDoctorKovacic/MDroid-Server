@@ -28,7 +28,6 @@ func validateToken(r *http.Request) bool {
 		return false
 	}
 
-	log.Println(fmt.Sprintf("Client attempting to connect with token %s", token))
 	if !isValidToken(token) {
 		log.Println("Invalid token.")
 		return false
