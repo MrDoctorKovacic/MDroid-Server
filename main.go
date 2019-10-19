@@ -9,6 +9,12 @@ import (
 	"github.com/gorilla/mux"
 )
 
+var shareQueue [][]byte
+
+func init() {
+	shareQueue = make([][]byte, 0)
+}
+
 func main() {
 	// Read tokens file
 	err := readTokens()
@@ -35,6 +41,50 @@ func main() {
 			w.WriteHeader(http.StatusNoContent)
 		}
 	}).Methods("GET")
+
+	// Handles a low data ping, responding 200 if a connection is waiting and 204 otherwise
+	router.HandleFunc("/share/ping", func(w http.ResponseWriter, r *http.Request) {
+		if len(shareQueue) > 0 {
+			w.WriteHeader(http.StatusOK)
+		} else {
+			w.WriteHeader(http.StatusNoContent)
+		}
+	}).Methods("GET")
+
+	// Handles a low data ping, responding 200 if a connection is waiting and 204 otherwise
+	router.HandleFunc("/share/{token}", func(w http.ResponseWriter, r *http.Request) {
+		if !validateToken(r) {
+			json.NewEncoder(w).Encode("Invalid token")
+			return
+		}
+
+		if len(shareQueue) > 0 {
+			w.WriteHeader(http.StatusOK)
+			var message []byte
+			message, shareQueue = shareQueue[len(shareQueue)-1], shareQueue[:len(shareQueue)-1]
+			w.Write(message)
+		}
+
+	}).Methods("GET")
+
+	// Handles a low data ping, responding 200 if a connection is waiting and 204 otherwise
+	router.HandleFunc("/share/{token}", func(w http.ResponseWriter, r *http.Request) {
+		if !validateToken(r) {
+			json.NewEncoder(w).Encode("Invalid token")
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		var message []byte
+		_, err := r.Body.Read(message)
+		if err != nil {
+			log.Println("Error reading body: \n" + err.Error())
+		}
+
+		shareQueue = append(shareQueue, message)
+		w.Write(message)
+
+	}).Methods("POST")
 
 	// Handles upgrading a client to the websocket.
 	router.HandleFunc("/ws/{token}", func(w http.ResponseWriter, r *http.Request) {

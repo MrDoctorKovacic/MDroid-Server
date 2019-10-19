@@ -4,7 +4,11 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"log"
+	"net/http"
 	"os"
+
+	"github.com/gorilla/mux"
 )
 
 var validTokens map[string]string
@@ -13,6 +17,23 @@ var validTokens map[string]string
 func isValidToken(token string) bool {
 	_, tokenValid := validTokens[token]
 	return tokenValid
+}
+
+func validateToken(r *http.Request) bool {
+	params := mux.Vars(r)
+	token, hasToken := params["token"]
+
+	if !hasToken {
+		log.Println("Rejecting connection without token.")
+		return false
+	}
+
+	log.Println(fmt.Sprintf("Client attempting to connect with token %s", token))
+	if !isValidToken(token) {
+		log.Println("Invalid token.")
+		return false
+	}
+	return true
 }
 
 func readTokens() error {
