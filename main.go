@@ -89,10 +89,11 @@ func main() {
 		messageStr := string(message)
 		strings.Replace(messageStr, "\n", " ", -1)
 		urlRegex.ReplaceAllString(messageStr, "")
+		newMessage := []byte(messageStr)
 
-		shareQueue = append(shareQueue, message)
-		log.Println("Added " + string(message) + " to the queue")
-		w.Write(message)
+		shareQueue = append(shareQueue, newMessage)
+		log.Println("Added " + string(newMessage) + " to the queue")
+		w.Write(newMessage)
 
 	}).Methods("POST")
 
