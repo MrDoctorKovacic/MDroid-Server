@@ -6,14 +6,19 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"regexp"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
 
 var shareQueue [][]byte
 
+var urlRegex *regexp.Regexp
+
 func init() {
 	shareQueue = make([][]byte, 0)
+	urlRegex = regexp.MustCompile(`https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)`)
 }
 
 func main() {
@@ -81,6 +86,9 @@ func main() {
 		if err != nil {
 			log.Println("Error reading body: \n" + err.Error())
 		}
+		messageStr := string(message)
+		strings.Replace(messageStr, "\n", " ", -1)
+		urlRegex.ReplaceAllString(messageStr, "")
 
 		shareQueue = append(shareQueue, message)
 		log.Println("Added " + string(message) + " to the queue")
