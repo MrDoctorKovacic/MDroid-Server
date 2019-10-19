@@ -14,10 +14,16 @@ import (
 
 var share []byte
 
-var urlRegex *regexp.Regexp
+var (
+	urlRegex   *regexp.Regexp
+	mapsRegex  *regexp.Regexp
+	phoneRegex *regexp.Regexp
+)
 
 func init() {
-	urlRegex = regexp.MustCompile(`https:\/\/maps.*`)
+	mapsRegex = regexp.MustCompile(`https:\/\/maps.*`)
+	urlRegex = regexp.MustCompile(`https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)`)
+	phoneRegex = regexp.MustCompile(`^([0-9]( |-)?)?(\(?[0-9]{3}\)?|[0-9]{3})( |-)?([0-9]{3}( |-)?[0-9]{4}|[a-zA-Z0-9]{7})$`)
 }
 
 func main() {
@@ -85,8 +91,9 @@ func main() {
 			log.Println("Error reading body: \n" + err.Error())
 		}
 		messageStr := string(message)
-		strings.Replace(messageStr, "\n", " ", -1)
-		urlRegex.ReplaceAllString(messageStr, "")
+		messageStr = strings.Replace(messageStr, "\n", " ", -1)
+		messageStr = urlRegex.ReplaceAllString(messageStr, "")
+		messageStr = phoneRegex.ReplaceAllString(messageStr, "")
 		share = []byte(messageStr)
 
 		log.Println("Added " + string(share) + " to the queue")
