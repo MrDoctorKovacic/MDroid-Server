@@ -59,13 +59,14 @@ func main() {
 		}
 
 		if len(shareQueue) > 0 {
-			w.WriteHeader(http.StatusOK)
 			var message []byte
 			message, shareQueue = shareQueue[len(shareQueue)-1], shareQueue[:len(shareQueue)-1]
 			log.Println("Popped " + string(message) + " from the queue")
 			w.Write(message)
+			w.WriteHeader(http.StatusOK)
+		} else {
+			w.WriteHeader(http.StatusNoContent)
 		}
-
 	}).Methods("GET")
 
 	// Handles a low data ping, responding 200 if a connection is waiting and 204 otherwise
@@ -75,7 +76,6 @@ func main() {
 			return
 		}
 
-		w.WriteHeader(http.StatusOK)
 		var message []byte
 		_, err := r.Body.Read(message)
 		if err != nil {
@@ -85,6 +85,7 @@ func main() {
 		shareQueue = append(shareQueue, message)
 		log.Println("Added " + string(message) + " to the queue")
 		w.Write(message)
+		w.WriteHeader(http.StatusOK)
 
 	}).Methods("POST")
 
