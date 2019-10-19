@@ -12,13 +12,12 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var shareQueue [][]byte
+var share []byte
 
 var urlRegex *regexp.Regexp
 
 func init() {
-	shareQueue = make([][]byte, 0)
-	urlRegex = regexp.MustCompile(`https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)`)
+	urlRegex = regexp.MustCompile(`https:\/\/maps.*`)
 }
 
 func main() {
@@ -50,7 +49,7 @@ func main() {
 
 	// Handles a low data ping, responding 200 if a connection is waiting and 204 otherwise
 	router.HandleFunc("/share/ping", func(w http.ResponseWriter, r *http.Request) {
-		if len(shareQueue) > 0 {
+		if len(share) > 0 {
 			w.WriteHeader(http.StatusOK)
 		} else {
 			w.WriteHeader(http.StatusNoContent)
@@ -64,12 +63,11 @@ func main() {
 			return
 		}
 
-		if len(shareQueue) > 0 {
-			var message []byte
-			message, shareQueue = shareQueue[len(shareQueue)-1], shareQueue[:len(shareQueue)-1]
-			log.Println("Popped " + string(message) + " from the queue")
-			w.Write(message)
+		if len(share) > 0 {
+			log.Println("Popped " + string(share) + " from the queue")
+			w.Write(share)
 			w.WriteHeader(http.StatusOK)
+			share = []byte("")
 		} else {
 			w.WriteHeader(http.StatusNoContent)
 		}
@@ -89,11 +87,10 @@ func main() {
 		messageStr := string(message)
 		strings.Replace(messageStr, "\n", " ", -1)
 		urlRegex.ReplaceAllString(messageStr, "")
-		newMessage := []byte(messageStr)
+		share = []byte(messageStr)
 
-		shareQueue = append(shareQueue, newMessage)
-		log.Println("Added " + string(newMessage) + " to the queue")
-		w.Write(newMessage)
+		log.Println("Added " + string(share) + " to the queue")
+		w.Write(share)
 
 	}).Methods("POST")
 
