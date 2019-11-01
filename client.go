@@ -67,14 +67,18 @@ func (c *Client) readPump() {
 			break
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		// parse message by newline, if necessary
-		messageSplit := bytes.Split(message, []byte("\n"))
+		messageSplit := bytes.Split(message, []byte("\n")) // parse message by newline, if necessary
 		if len(messageSplit) > 1 {
 			log.Printf(fmt.Sprintf("Split incoming message into %d parts", len(messageSplit)))
 		}
 		for _, m := range messageSplit {
 			log.Printf(fmt.Sprintf("Sending message %s", m))
-			c.hub.broadcast <- m
+			//c.hub.broadcast <- m
+			for client := range c.hub.clients {
+				if client != c {
+					client.send <- m
+				}
+			}
 		}
 	}
 }
