@@ -131,6 +131,13 @@ func (c *Client) writePump() {
 
 // serveWs handles websocket requests from the peer.
 func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
+	// Should only have 2 clients max, drop others when this occurs
+	if len(hub.clients) >= 2 {
+		for client := range hub.clients {
+			close(client.send)
+			delete(hub.clients, client)
+		}
+	}
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true } // return true for now, although this should range over accepted origins
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
