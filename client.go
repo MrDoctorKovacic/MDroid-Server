@@ -133,6 +133,7 @@ func (c *Client) writePump() {
 func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	// Should only have 2 clients max, drop others when this occurs
 	if len(hub.clients) >= 2 {
+		log.Println(string(len(hub.clients)) + " connected! Dropping all to create new connection")
 		for client := range hub.clients {
 			close(client.send)
 			delete(hub.clients, client)
